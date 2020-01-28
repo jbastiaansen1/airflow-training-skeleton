@@ -1,9 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
-
 from datetime import timedelta
 from datetime import datetime
 import airflow
@@ -25,7 +19,7 @@ args = {
 }
 
 with DAG(
-    dag_id='exercise-templating',
+    dag_id='exercise',
     default_args=args,
     schedule_interval='@daily',
 ) as dag:
@@ -42,7 +36,7 @@ branching = BranchPythonOperator(
     task_id="branching", 
     python_callable=_get_weekday, 
     provide_context=True,
-    dag=dag
+    dag=dag,
 )
 
 
@@ -55,7 +49,4 @@ final_task = DummyOperator(
     trigger_rule="none_failed"
 )
 
-print_weekday >> branching >> email_a >> final_task
-branching >> email_b >> final_task
-branching >> email_c >> final_task
-
+print_weekday >> branching >> final_task
