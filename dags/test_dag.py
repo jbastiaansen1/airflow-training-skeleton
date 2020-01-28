@@ -23,7 +23,7 @@ args = {
 dag = DAG(
     dag_id='test_dag',
     default_args=args,
-    schedule_interval='0 0 * * *',
+    schedule_interval= None,
     dagrun_timeout=timedelta(minutes=60),
 )
 
