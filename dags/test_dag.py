@@ -4,40 +4,51 @@ import airflow
 from airflow.models import DAG
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.dummy_operator import DummyOperator
+from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python_operator import BranchPythonOperator
+
+def _print_get_weekday(execution_date, **context):
+    return print(execution_date.strftime("%a"))
+
+def _get_weekday(execution_date, **context):
+    return execution_date.strftime("%a")
 
 args = {
     'owner': 'Airflow',
-    'start_date': datetime(2020,1,1),
+    'start_date': airflow.utils.dates.days_ago(7),
 }
 
-dag = DAG(
-    dag_id='test_dag',
+with DAG(
+    dag_id='exercise-templating',
     default_args=args,
     schedule_interval='@daily',
-    dagrun_timeout=timedelta(minutes=60),
-)
+) as dag:
 
-task1 = DummyOperator(
-    task_id='task1',
-    dag=dag,
-)
-task2 = DummyOperator(
-    task_id='task2',
-    dag=dag,
-)
-task3 = DummyOperator(
-    task_id='task3',
+
+print_weekday = PythonOperator(
+    task_id="print_weekday",
+    python_callable=__print_get_weekday,
+    provide_context=True,
     dag=dag,
 )
 
-task4 = DummyOperator(
-    task_id='task4',
-    dag=dag,
-)   
+branching = BranchPythonOperator(
+    task_id="branching", 
+    python_callable=_get_weekday, 
+    provide_context=True,
+    dag=dag
+)
+
+
+mails = ["email_a", "email_b", "email_c"]
+for mail in mails:
+    branching >> DummyOperator(task_id=mail, dag=dag)
     
-task5 = DummyOperator(
-    task_id='task5',
-    dag=dag,
+final_task = DummyOperator(
+    task_id="join",
+    trigger_rule="none_failed"
 )
-task1 >> task2 >> task3 >> task5
-task2 >> task4 >> task5
+
+print_weekday >> branching >> email_a >> final_task
+branching >> email_b >> final_task
+branching >> email_c >> final_task
