@@ -33,24 +33,24 @@ dag = DAG(
 
 task1 = DummyOperator(
     task_id='task1',
-    dag=dag
-
+    dag=dag,
+)
 task2 = DummyOperator(
     task_id='task2',
-    dag=dag
-
+    dag=dag,
+)
 task3 = DummyOperator(
     task_id='task3',
-    dag=dag
-
+    dag=dag,
+)
 task4 = DummyOperator(
     task_id='task4',
-    dag=dag
-    
+    dag=dag,
+) 
 task5 = DummyOperator(
     task_id='task5',
-    dag=dag
-
+    dag=dag,
+)
 task1 >> task2 >> task3 >> task5
 task2 >> task4 >> task5
 
